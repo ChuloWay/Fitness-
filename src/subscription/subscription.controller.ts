@@ -9,4 +9,9 @@ export class SubscriptionController {
   findAll() {
     return this.subscriptionService.findAllWithRelations();
   }
+
+  @Get('/due-in-next-seven-days')
+  findAllDueInNextSevenDays() {
+    return this.subscriptionService.findDueInNextSevenDays();
+  }
 }

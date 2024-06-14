@@ -3,15 +3,21 @@ import { SubscriptionService } from './subscription.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Subscription } from './entities/subscription.entity';
+import { Invoice } from 'src/invoice/entities/invoice.entity';
 
 describe('SubscriptionService', () => {
   let service: SubscriptionService;
-  let repository: Repository<Subscription>;
+  let subscriptionRepository: Repository<Subscription>;
+  let invoiceRepository: Repository<Invoice>;
 
   const mockSubscriptionRepository = {
     createQueryBuilder: jest.fn().mockReturnThis(),
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
+  };
+
+  const mockInvoiceRepository = {
+    save: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -22,11 +28,16 @@ describe('SubscriptionService', () => {
           provide: getRepositoryToken(Subscription),
           useValue: mockSubscriptionRepository,
         },
+        {
+          provide: getRepositoryToken(Invoice),
+          useValue: mockInvoiceRepository,
+        },
       ],
     }).compile();
 
     service = module.get<SubscriptionService>(SubscriptionService);
-    repository = module.get<Repository<Subscription>>(getRepositoryToken(Subscription));
+    subscriptionRepository = module.get<Repository<Subscription>>(getRepositoryToken(Subscription));
+    invoiceRepository = module.get<Repository<Invoice>>(getRepositoryToken(Invoice));
   });
 
   it('should fetch subscriptions with all relations', async () => {
