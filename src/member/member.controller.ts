@@ -1,34 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { MemberService } from './member.service';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+
+import { Member } from './entities/member.entity';
+import { MembersService } from './member.service';
 import { CreateMemberDto } from './dto/create-member.dto';
-import { UpdateMemberDto } from './dto/update-member.dto';
 
-@Controller('member')
-export class MemberController {
-  constructor(private readonly memberService: MemberService) {}
-
-  @Post()
-  create(@Body() createMemberDto: CreateMemberDto) {
-    return this.memberService.create(createMemberDto);
-  }
+@Controller('members')
+export class MembersController {
+  membersRepository: any;
+  constructor(private readonly membersService: MembersService) {}
 
   @Get()
-  findAll() {
-    return this.memberService.findAll();
+  findAll(): Promise<Member[]> {
+    return this.membersService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.memberService.findOne(+id);
+  findOne(@Param('id') id: string): Promise<Member> {
+    return this.membersService.findOne(id);
   }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMemberDto: UpdateMemberDto) {
-    return this.memberService.update(+id, updateMemberDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.memberService.remove(+id);
+  @Post()
+  async create(@Body() createMemberDto: CreateMemberDto): Promise<Member> {
+    return this.membersService.create(createMemberDto);
   }
 }

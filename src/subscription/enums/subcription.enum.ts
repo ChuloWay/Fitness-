@@ -1,6 +1,6 @@
 export enum SubscriptionType {
-  AnnualBasic = 'Annual Basic',
-  MonthlyPremium = 'Monthly Premium',
-  AnnualPremium = 'Annual Premium',
-  MonthlyBasic = 'Monthly Basic',
+  ANNUAL_BASIC = 'Annual Basic',
+  MONTHLY_PREMIUM = 'Monthly Premium',
+  ANNUAL_PREMIUM = 'Annual Premium',
+  MONTHLY_BASIC = 'Monthly Basic',
 }

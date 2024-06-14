@@ -27,6 +27,12 @@ export class Subscription {
   @Column({ default: true })
   isFirstMonth: boolean;
 
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
   @ManyToOne(() => Member, (member) => member.subscriptions, { eager: true })
   @JoinColumn({ name: 'member_id' })
   member: Member;
@@ -42,10 +48,5 @@ export class Subscription {
     cascade: true,
   })
   invoices: Invoice[];
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
+  totalCost: number;
 }

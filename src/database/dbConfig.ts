@@ -17,13 +17,15 @@ export const dataSourceOptions: DataSourceOptions = {
 
 const dataSource = new DataSource(dataSourceOptions);
 
-(async () => {
-  try {
-    await dataSource.initialize();
+dataSource
+  .initialize()
+  .then(async () => {
     Logger.log('Data Source has been initialized!', 'Database');
-  } catch (err) {
-    Logger.error('Error during Data Source initialization', err.stack);
-  }
-})();
+  })
+  .catch((err) => {
+    Logger.error('Error during Data Source initialization');
+    Logger.error(err);
+    Logger.error('Error during Data Source initialization');
+  });
 
 export default dataSource;

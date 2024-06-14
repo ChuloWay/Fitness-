@@ -1,26 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSubscriptionDto } from './dto/create-subscription.dto';
-import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Subscription } from './entities/subscription.entity';
 
 @Injectable()
 export class SubscriptionService {
-  create(createSubscriptionDto: CreateSubscriptionDto) {
-    return 'This action adds a new subscription';
-  }
+  constructor(
+    @InjectRepository(Subscription)
+    private subscriptionRepository: Repository<Subscription>,
+  ) {}
 
-  findAll() {
-    return `This action returns all subscription`;
-  }
+  async findAllWithRelations(): Promise<Partial<Subscription>[] | any> {
+    const subscriptions = await this.subscriptionRepository
+      .createQueryBuilder('subscription')
+      .leftJoinAndSelect('subscription.member', 'member')
+      .leftJoinAndSelect('subscription.addOnServices', 'addOnService')
+      .leftJoinAndSelect('subscription.invoices', 'invoice')
+      .getMany();
 
-  findOne(id: number) {
-    return `This action returns a #${id} subscription`;
-  }
+    subscriptions.forEach((subscription) => {
+      let totalAmount = subscription?.totalAmount || 0;
+      let addOnTotal = 0;
 
-  update(id: number, updateSubscriptionDto: UpdateSubscriptionDto) {
-    return `This action updates a #${id} subscription`;
-  }
+      if (subscription.addOnServices && subscription.addOnServices.length > 0) {
+        addOnTotal = subscription.addOnServices.reduce((sum, service) => sum + service.monthlyAmount, 0);
+      }
 
-  remove(id: number) {
-    return `This action removes a #${id} subscription`;
+      subscription.totalCost = Number(totalAmount) + Number(addOnTotal);
+    });
+
+    return subscriptions;
   }
 }

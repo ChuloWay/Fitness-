@@ -1,26 +1,38 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Member } from './entities/member.entity';
 import { CreateMemberDto } from './dto/create-member.dto';
-import { UpdateMemberDto } from './dto/update-member.dto';
+import { MailService } from 'src/utils/mailService';
 
 @Injectable()
-export class MemberService {
-  create(createMemberDto: CreateMemberDto) {
-    return 'This action adds a new member';
+export class MembersService {
+  constructor(
+    @InjectRepository(Member)
+    private membersRepository: Repository<Member>,
+    private readonly mailService: MailService,
+  ) {}
+
+  findAll(): Promise<Member[]> {
+    return this.membersRepository.find();
   }
 
-  findAll() {
-    return `This action returns all member`;
+  findOne(id: string): Promise<Member> {
+    return this.membersRepository.findOne({ where: { id } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} member`;
-  }
+  async create(createMemberDto: CreateMemberDto): Promise<Member> {
+    const foundMember = await this.membersRepository.findOne({ where: { email: createMemberDto.email } });
 
-  update(id: number, updateMemberDto: UpdateMemberDto) {
-    return `This action updates a #${id} member`;
-  }
+    if (foundMember) {
+      throw new Error('Member with this email already exists');
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} member`;
+    const newMember = this.membersRepository.create(createMemberDto);
+    const savedMember = await this.membersRepository.save(newMember);
+
+    await this.mailService.sendWelcomeEmail(savedMember.email, savedMember.firstName, savedMember.lastName);
+
+    return savedMember;
   }
 }
