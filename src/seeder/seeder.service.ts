@@ -20,6 +20,11 @@ export class SeederService {
     private invoiceRepository: Repository<Invoice>,
   ) {}
 
+  /**
+   * Seed the database with initial data.
+   *
+   * @return {Promise<void>} A promise that resolves when the database is seeded successfully.
+   */
   async seed() {
     await this.clearDatabase();
 
@@ -754,7 +759,11 @@ export class SeederService {
 
     console.log('Database seeded successfully');
   }
-
+  /**
+   * Clears the entire database by truncating the "subscription", "member", "add_on_service", and "invoice" tables.
+   *
+   * @return {Promise<void>} A promise that resolves when the database has been cleared.
+   */
   async clearDatabase() {
     await Promise.all([
       this.subscriptionRepository.query('TRUNCATE TABLE "subscription" CASCADE;'),

@@ -11,6 +11,11 @@ export class CronService {
     private mailService: MailService,
   ) {}
 
+  /**
+   * Handles the cron job that runs daily and checks for upcoming membership fees.
+   *
+   * @return {Promise<void>} A promise that resolves when the cron job is completed.
+   */
   @Cron('0 0 * * *')
   async handleCron() {
     try {
@@ -83,6 +88,14 @@ export class CronService {
     return `http://fitnessplus.com/invoice/${subscriptionId}`;
   }
 
+  /**
+   * Sends an invoice reminder email to the specified email address.
+   *
+   * @param {string} email - The email address to send the reminder to.
+   * @param {string} subject - The subject of the email.
+   * @param {string} message - The message content of the email.
+   * @return {Promise<void>} - A promise that resolves when the email is sent.
+   */
   private async sendInvoiceReminder(email: string, subject: string, message: string) {
     await this.mailService.sendMail(email, subject, message);
   }

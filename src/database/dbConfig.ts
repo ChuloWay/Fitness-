@@ -1,6 +1,20 @@
 import { Logger } from '@nestjs/common';
 import { DataSource, DataSourceOptions } from 'typeorm';
-require('dotenv').config();
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
+const logger = new Logger('Database');
+
+// Validate environment variables
+const requiredEnvVars = ['POSTGRES_HOST', 'POSTGRES_PORT', 'POSTGRES_USERNAME', 'POSTGRES_PASSWORD', 'POSTGRES_DATABASE'];
+
+for (const varName of requiredEnvVars) {
+  if (!process.env[varName]) {
+    logger.error(`Environment variable ${varName} is not set.`);
+    throw new Error(`Environment variable ${varName} is not set.`);
+  }
+}
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -19,13 +33,13 @@ const dataSource = new DataSource(dataSourceOptions);
 
 dataSource
   .initialize()
-  .then(async () => {
-    Logger.log('Data Source has been initialized!', 'Database');
+  .then(() => {
+    logger.log('Data Source has been initialized successfully.');
   })
   .catch((err) => {
-    Logger.error('Error during Data Source initialization');
-    Logger.error(err);
-    Logger.error('Error during Data Source initialization');
+    logger.error('Error during Data Source initialization');
+    logger.error(err.message);
+    throw new Error('Failed to initialize Data Source');
   });
 
 export default dataSource;

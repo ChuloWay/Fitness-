@@ -1,14 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+
 @Injectable()
 export class MailService {
-  private transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
+  private readonly logger = new Logger(MailService.name);
+  private transporter;
+
+  constructor() {
+    if (!process.env.EMAIL_USERNAME || !process.env.EMAIL_PASSWORD) {
+      this.logger.error('Email credentials are not set in environment variables');
+      throw new Error('Email credentials are not set in environment variables');
+    }
+
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    this.transporter.verify((error, success) => {
+      if (error) {
+        this.logger.error('Error configuring email transporter', error);
+        throw new Error('Error configuring email transporter');
+      } else {
+        this.logger.log('Email transporter configured successfully');
+      }
+    });
+  }
 
   async sendMail(to: string, subject: string, text: string) {
     const mailOptions = {
@@ -19,15 +39,11 @@ export class MailService {
     };
 
     try {
-      if (!process.env.EMAIL_USERNAME || !process.env.EMAIL_PASSWORD) {
-        throw new Error('Email credentials are not set in environment variables');
-      }
-
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Message sent: %s', info.messageId);
+      this.logger.log(`Message sent: ${info.messageId}`);
     } catch (err) {
-      console.error('Error sending email: ', err);
-      throw err;
+      this.logger.error('Error sending email: ', err.message);
+      throw new Error(`Failed to send email: ${err.message}`);
     }
   }
 
