@@ -14,7 +14,7 @@ describe('InvoiceService', () => {
         InvoiceService,
         {
           provide: getRepositoryToken(Invoice),
-          useClass: Repository, // Mock class for Repository
+          useClass: Repository,
         },
       ],
     }).compile();
@@ -29,7 +29,7 @@ describe('InvoiceService', () => {
 
   describe('updateInvoiceLink', () => {
     it('should update invoice link', async () => {
-      const subscriptionId = '1'; // Example subscriptionId
+      const subscriptionId = '1';
       const invoiceLink = 'http://example.com/invoice/1';
 
       const updateSpy = jest.spyOn(invoiceRepository, 'update').mockResolvedValue(undefined);
@@ -40,12 +40,12 @@ describe('InvoiceService', () => {
     });
 
     it('should handle errors', async () => {
-      const subscriptionId = '1'; // Example subscriptionId
+      const subscriptionId = '1';
       const invoiceLink = 'http://example.com/invoice/1';
 
       const updateSpy = jest.spyOn(invoiceRepository, 'update').mockRejectedValueOnce(new Error('Update failed'));
 
-      await expect(service.updateInvoiceLink(subscriptionId, invoiceLink)).rejects.toThrowError('Update failed');
+      await expect(service.updateInvoiceLink(subscriptionId, invoiceLink)).rejects.toThrow('Update failed');
     });
   });
 });
