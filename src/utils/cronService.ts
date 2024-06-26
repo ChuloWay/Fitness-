@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { SubscriptionService } from 'src/subscription/subscription.service';
 import { MailService } from './mailService';
 import { InvoiceService } from 'src/invoice/invoice.service';
@@ -16,11 +16,12 @@ export class CronService {
    *
    * @return {Promise<void>} A promise that resolves when the cron job is completed.
    */
-  @Cron('0 0 * * *')
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async handleCron() {
     try {
       const currentDate = new Date();
       const subscriptions = await this.subscriptionService.findDueInNextSevenDays();
+      console.log('subs here:', subscriptions);
 
       for (const subscription of subscriptions) {
         const { member, addOnServices, totalCost, type, isFirstMonth, dueDate, invoice } = subscription;
@@ -35,30 +36,35 @@ export class CronService {
         if (isFirstMonth) {
           let reminderDate = new Date(dueDate);
           reminderDate.setDate(reminderDate.getDate() - 7);
-
+          console.log('checking if its user first month');
           if (currentDate >= reminderDate) {
             const emailSubject = `Fitness+ Membership Reminder - ${type}`;
             const emailMessage = `
               Dear ${member.firstName} ${member.lastName},
 
               Your first month's invoice is due on ${dueDate.toDateString()}.
-              Total amount: $${totalCost.toFixed(2)}.
+              Total amount: $${totalCost}.
 
               Here is a breakdown of your charges:
+
               - Membership Type: ${type}
-              - Base Amount: $${subscription.totalAmount.toFixed(2)}
+              
+              - Base Amount: $${subscription?.totalAmount}
               ${addOnServices.length > 0 ? '- Add-On Services:' : ''}
-              ${addOnServices.map((service) => `  - ${service.name}: $${service.monthlyAmount.toFixed(2)}`).join('\n')}
+              ${addOnServices.map((service) => `  - ${service.name}: $${service.monthlyAmount}`).join('\n')}
 
               View your invoice here: ${invoiceLink}
 
               Thank you,
               Fitness+
             `;
+            console.log(emailSubject);
+
             await this.sendInvoiceReminder(member.email, emailSubject, emailMessage);
           }
         } else {
           for (const service of addOnServices) {
+            console.log('checking for user add on service');
             const serviceDueDate = new Date(service.dueDate);
             if (currentDate.getMonth() === serviceDueDate.getMonth() && currentDate.getFullYear() === serviceDueDate.getFullYear()) {
               const emailSubject = `Fitness+ Membership Reminder - ${type}`;
@@ -66,13 +72,15 @@ export class CronService {
                 Dear ${member.firstName} ${member.lastName},
 
                 Your add-on service "${service.name}" invoice is due this month.
-                Monthly amount: $${service.monthlyAmount.toFixed(2)}.
+                Monthly amount: $${service.monthlyAmount}.
 
                 View your invoice here: ${invoiceLink}
 
+                
                 Thank you,
                 Fitness+
               `;
+              console.log(emailMessage);
               await this.sendInvoiceReminder(member.email, emailSubject, emailMessage);
             }
           }

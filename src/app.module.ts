@@ -8,9 +8,18 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { AddOnServiceModule } from './add-on-service/add-on-service.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { SeederModule } from './seeder/seeder.module';
+import { CronModule } from './utils/cronjobs.module';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(dataSourceOptions), MemberModule, SubscriptionModule, AddOnServiceModule, InvoiceModule, SeederModule],
+  imports: [
+    TypeOrmModule.forRoot(dataSourceOptions),
+    MemberModule,
+    SubscriptionModule,
+    AddOnServiceModule,
+    InvoiceModule,
+    SeederModule,
+    CronModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
